@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model ChatRoom {
+  id        String         @id @default(uuid()) @map("_id")
+  name      String
+  users     UserChatRoom[]
+  messages  Message[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model User {
+  id         String         @id @default(uuid()) @map("_id")
+  email      String         @unique
+  password   String
+  username   String         @unique
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  chatRooms  UserChatRoom[]
+  Message    Message[]
+  userDetail UserDetail?
+  chatRoomId String?
+}
+
+model UserChatRoom {
+  id         String   @id @default(uuid()) @map("_id")
+  userId     String
+  chatRoomId String
+  user       User     @relation(fields: [userId], references: [id])
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+}
+
+model UserDetail {
+  id         String         @id @map("_id")
+  user       User           @relation(fields: [id], references: [id])
+  avatar     File?          @relation(fields: [avatarPath], references: [path])
+  avatarPath String?        @unique
+  fullName   String?
+  gender     GenderEnum     @default(UNKNOWN)
+  birthdate  DateTime?
+  heroScopes HeroscopeEnum?
+  zodiac     ZodiacEnum?
+  height     String?
+  weight     String?
+  about      String?
+  interests  String[]
+}
+
+model Message {
+  id         String   @id @default(uuid()) @map("_id")
+  content    String
+  sender     User     @relation(fields: [senderId], references: [id])
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  senderId   String
+  chatRoomId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model File {
+  path       String       @id @map("_id")
+  fileType   FileTypeEnum
+  fileSize   Float?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  UserDetail UserDetail?
+}
+
+enum GenderEnum {
+  UNKNOWN
+  MALE
+  FEMALE
+}
+
+enum HeroscopeEnum {
+  ARIES
+  TAURUS
+  GEMINI
+  CANCER
+  LEO
+  VIRGO
+  LIBRA
+  SCORPIO
+  SAGITTARIUS
+  CAPRICORN
+  AQUARIUS
+  PISCES
+}
+
+enum ZodiacEnum {
+  RAM
+  BULL
+  TWINS
+  CRAB
+  LION
+  VIRGO
+  LIBRA
+  SCORPIO
+  ARCHER
+  GOAT
+  WATER_BEARER
+  FISH
+}
+
+enum FileTypeEnum {
+  UNKNOWN
+  MP4
+  JPG
+  PNG
+  PDF
+  DOC
+  DOCX
+  XLS
+  XLSX
+  CSV
+  PPT
+  PPTX
+  ZIP
+  RAR
+  TXT
+  JSON
+  XML
+  HTML
+  CSS
+  JS
+  TS
+}
